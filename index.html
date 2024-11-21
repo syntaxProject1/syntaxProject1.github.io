@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data DPT TPS 31</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .thColspan {
+      text-align: center;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Data DPT TPS 31</h1>
+
+  <form id="crudForm">
+    <input type="text" id="no_kk" placeholder="Cari No KK">
+    <button type="submit">Cari</button>
+  </form>
+
+  <div id="tablesContainer">
+    <!-- Tables will be inserted here -->
+  </div>
+
+  <script>
+    const tablesContainer = document.getElementById('tablesContainer');
+    const form = document.getElementById('crudForm');
+    const noKkInput = document.getElementById('no_kk');
+
+    // Function to fetch data from API and render tables
+    async function fetchData(noKk = '0') {
+      try {
+        const url = `https://backend-undangan-tps-production.up.railway.app/api/tps/31/${noKk ||0}`;
+        console.log(`Fetching data from: ${url}`);
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Data received:', data);
+
+        // Pastikan data ada dan memiliki struktur yang benar
+        if (data && data.data) {
+          console.log('Data Data:', data.data);
+          renderTables(data.data, noKk);
+        } else {
+          tablesContainer.innerHTML = '<p>No data found for the given No KK.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        tablesContainer.innerHTML = `<p>Error fetching data from the server: ${error.message}</p>`;
+      }
+    }
+
+    // Function to render tables
+    function renderTables(data, filterNoKk) {
+      tablesContainer.innerHTML = ''; // Clear existing tables
+      const filteredData = filterNoKk
+        ? data.filter(item => item.no_kk.includes(filterNoKk)) // Pencarian berdasarkan no_kk
+        : data;
+
+      filteredData.forEach(item => {
+        const table = document.createElement('table');
+
+        // Table header
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th colspan="2" class="thColspan">${item.no_kk}</th>
+            </tr>
+            <tr>
+              <th>No Urut</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${item.members.map(member => `
+              <tr>
+                <td>${member.no}</td>
+                <td>${member.nama}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        `;
+
+        tablesContainer.appendChild(table);
+      });
+
+      // Menangani jika tidak ada data yang ditemukan
+      if (filteredData.length === 0) {
+        tablesContainer.innerHTML = '<p>No data found for the given No KK.</p>';
+      }
+    }
+
+    function renderFilterTables(data, filterNoKk) {
+      tablesContainer.innerHTML = ''; // Clear existing tables
+      console.log('data',data)
+      const filteredData = filterNoKk
+        ? data.filter(item => item.no_kk.includes(filterNoKk)) // Pencarian berdasarkan no_kk
+        : data;
+
+      filteredData.forEach(item => {
+        const table = document.createElement('table');
+
+        // Table header
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th colspan="2" class="thColspan">${item.no_kk}</th>
+            </tr>
+            <tr>
+              <th>No Urut</th>
+              <th>Nama</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${item.members.map(member => `
+              <tr>
+                <td>${member.no}</td>
+                <td>${member.nama}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        `;
+
+        tablesContainer.appendChild(table);
+      });
+
+      // Menangani jika tidak ada data yang ditemukan
+      if (filteredData.length === 0) {
+        tablesContainer.innerHTML = '<p>No data found for the given No KK.</p>';
+      }
+    }
+
+    // Initial rendering with no filter (default empty search)
+    fetchData();
+
+    // Handle form submission for filtering
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const filterNoKk = noKkInput.value.trim(); // Ambil nilai dari input field
+      fetchData(filterNoKk); // Panggil fetchData dengan filter no_kk
+    });
+    
+  </script>
+</body>
+</html>
